@@ -60,3 +60,9 @@
     publicBtn.addEventListener("click", () => setMode("public"));
     privacyBtn.addEventListener("click", () => setMode("privacy"));
 })();
+
+(() => {
+    const yearEl = document.getElementById("copyright-year");
+    if (!yearEl) return;
+    yearEl.textContent = String(new Date().getFullYear());
+})();
