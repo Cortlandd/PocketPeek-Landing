@@ -168,12 +168,13 @@
 <p class="text-slate-400 text-lg font-medium">Perfectly sized for every home screen layout.</p>
 </div>
 <div class="flex flex-col items-center gap-16">
-<div class="flex bg-background-dark p-1.5 rounded-full border border-white/10 relative overflow-hidden">
-<button class="px-8 py-2.5 rounded-full text-sm font-bold text-slate-500 hover:text-white transition-colors">Public View</button>
-<button class="px-8 py-2.5 rounded-full text-sm font-bold bg-primary text-background-dark shadow-lg shadow-primary/10">Privacy Mode</button>
+<div class="flex bg-background-dark p-1.5 rounded-full border border-white/10 relative overflow-hidden" id="widget-view-toggle">
+<button aria-pressed="false" class="px-8 py-2.5 rounded-full text-sm font-bold text-slate-500 hover:text-white transition-colors" id="public-view-btn" type="button">Public View</button>
+<button aria-pressed="true" class="px-8 py-2.5 rounded-full text-sm font-bold bg-primary text-background-dark shadow-lg shadow-primary/10 transition-colors" id="privacy-mode-btn" type="button">Privacy Mode</button>
 </div>
-<p class="text-center text-primary text-sm font-bold -mt-8 flex items-center gap-2">
-<span class="material-symbols-outlined text-base">visibility_off</span> Showing Privacy Mode: All balances are blurred for public viewing.
+<p class="text-center text-primary text-sm font-bold -mt-8 flex items-center gap-2" id="widget-view-status">
+<span class="material-symbols-outlined text-base" id="widget-view-icon">visibility_off</span>
+<span id="widget-view-text">Showing Privacy Mode: All balances are blurred for public viewing.</span>
 </p>
 <div class="grid lg:grid-cols-3 gap-12 items-end w-full">
 <!-- Small Widget (Privacy) -->
@@ -182,7 +183,7 @@
 <span class="material-symbols-outlined text-primary text-3xl">account_balance</span>
 <div>
 <p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest mb-1">Total Balance</p>
-<p class="text-2xl font-black blur-md select-none">$12,450</p>
+<p class="text-2xl font-black blur-md select-none js-sensitive">$12,450</p>
 </div>
 </div>
 <span class="text-sm font-bold text-slate-500">Small (2x2)</span>
@@ -192,12 +193,12 @@
 <div class="w-full h-48 bg-background-dark rounded-[2.5rem] p-8 flex items-center justify-between shadow-2xl border border-white/10 ring-1 ring-white/5 max-w-lg">
 <div class="space-y-1">
 <p class="text-[10px] uppercase font-bold text-slate-500 tracking-widest mb-1">Monthly Spending</p>
-<p class="text-3xl font-black text-primary blur-lg select-none">$3,240.12</p>
+<p class="text-3xl font-black text-primary blur-lg select-none js-sensitive">$3,240.12</p>
 <p class="text-[11px] text-red-400 font-bold flex items-center gap-1">
 <span class="material-symbols-outlined text-sm">trending_up</span> 12% more than last month
                             </p>
 </div>
-<div class="h-28 w-40 flex items-end gap-1.5 grayscale opacity-50">
+<div class="h-28 w-40 flex items-end gap-1.5 grayscale opacity-50 js-chart">
 <div class="w-full bg-primary/10 h-1/2 rounded-t-md"></div>
 <div class="w-full bg-primary/30 h-3/4 rounded-t-md"></div>
 <div class="w-full bg-primary/50 h-2/3 rounded-t-md"></div>
@@ -213,19 +214,19 @@
 <div class="space-y-4">
 <div class="flex justify-between items-center border-b border-white/5 pb-3">
 <span class="text-sm text-slate-300">Main Checking</span>
-<span class="font-bold blur-[6px] select-none">$4,200</span>
+<span class="font-bold blur-[6px] select-none js-sensitive">$4,200</span>
 </div>
 <div class="flex justify-between items-center border-b border-white/5 pb-3">
 <span class="text-sm text-slate-300">Savings</span>
-<span class="font-bold blur-[6px] select-none">$25,100</span>
+<span class="font-bold blur-[6px] select-none js-sensitive">$25,100</span>
 </div>
 <div class="flex justify-between items-center border-b border-white/5 pb-3">
 <span class="text-sm text-slate-300">Investment</span>
-<span class="font-bold blur-[6px] select-none">$12,800</span>
+<span class="font-bold blur-[6px] select-none js-sensitive">$12,800</span>
 </div>
 <div class="flex justify-between items-center text-primary pt-2">
 <span class="text-sm font-bold">Net Worth</span>
-<span class="text-2xl font-black blur-md select-none">$42,100</span>
+<span class="text-2xl font-black blur-md select-none js-sensitive">$42,100</span>
 </div>
 </div>
 </div>
@@ -394,4 +395,68 @@
 <p class="text-[10px] text-slate-600 font-bold uppercase tracking-widest">© 2024 PocketPeek. All rights reserved.</p>
 </div>
 </footer>
+<script>
+(() => {
+    const publicBtn = document.getElementById("public-view-btn");
+    const privacyBtn = document.getElementById("privacy-mode-btn");
+    if (!publicBtn || !privacyBtn) return;
+
+    const sensitiveEls = Array.from(document.querySelectorAll(".js-sensitive"));
+    const chartEls = Array.from(document.querySelectorAll(".js-chart"));
+    const statusIcon = document.getElementById("widget-view-icon");
+    const statusText = document.getElementById("widget-view-text");
+    const blurClasses = ["blur-md", "blur-lg", "blur-[6px]"];
+
+    sensitiveEls.forEach((el) => {
+        const existing = blurClasses.filter((blurClass) => el.classList.contains(blurClass));
+        el.dataset.privacyBlur = existing.join(" ");
+    });
+
+    const setMode = (mode) => {
+        const isPrivacy = mode === "privacy";
+
+        publicBtn.classList.toggle("bg-primary", !isPrivacy);
+        publicBtn.classList.toggle("text-background-dark", !isPrivacy);
+        publicBtn.classList.toggle("shadow-lg", !isPrivacy);
+        publicBtn.classList.toggle("shadow-primary/10", !isPrivacy);
+        publicBtn.classList.toggle("text-slate-500", isPrivacy);
+        publicBtn.classList.toggle("hover:text-white", isPrivacy);
+
+        privacyBtn.classList.toggle("bg-primary", isPrivacy);
+        privacyBtn.classList.toggle("text-background-dark", isPrivacy);
+        privacyBtn.classList.toggle("shadow-lg", isPrivacy);
+        privacyBtn.classList.toggle("shadow-primary/10", isPrivacy);
+        privacyBtn.classList.toggle("text-slate-500", !isPrivacy);
+        privacyBtn.classList.toggle("hover:text-white", !isPrivacy);
+
+        publicBtn.setAttribute("aria-pressed", String(!isPrivacy));
+        privacyBtn.setAttribute("aria-pressed", String(isPrivacy));
+
+        sensitiveEls.forEach((el) => {
+            blurClasses.forEach((blurClass) => el.classList.remove(blurClass));
+            if (isPrivacy && el.dataset.privacyBlur) {
+                el.dataset.privacyBlur.split(" ").forEach((blurClass) => el.classList.add(blurClass));
+            }
+        });
+
+        chartEls.forEach((el) => {
+            el.classList.toggle("grayscale", isPrivacy);
+            el.classList.toggle("opacity-50", isPrivacy);
+        });
+
+        if (statusIcon) {
+            statusIcon.textContent = isPrivacy ? "visibility_off" : "visibility";
+        }
+
+        if (statusText) {
+            statusText.textContent = isPrivacy
+                ? "Showing Privacy Mode: All balances are blurred for public viewing."
+                : "Showing Public View: Balances are fully visible.";
+        }
+    };
+
+    publicBtn.addEventListener("click", () => setMode("public"));
+    privacyBtn.addEventListener("click", () => setMode("privacy"));
+})();
+</script>
 </body></html>
