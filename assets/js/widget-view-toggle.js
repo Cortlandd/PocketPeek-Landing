@@ -59,6 +59,7 @@
 
     publicBtn.addEventListener("click", () => setMode("public"));
     privacyBtn.addEventListener("click", () => setMode("privacy"));
+    setMode("public");
 })();
 
 (() => {
